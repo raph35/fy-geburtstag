@@ -233,14 +233,14 @@
 
 <audio id="music" loop>
     <!-- Replace with your own romantic song -->
-    <source src="../assets/audio/fond.mp3" type="audio/mpeg">
+    <source src="https://raph35.github.io/fy-geburtstag/assets/audio/fond.mp3" type="audio/mpeg">
 </audio>
 
 <div id="screen-fade"></div>
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
-    console.log('test')
+    // console.log('test')
     const targetDate = new Date('2026-02-06T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -268,17 +268,15 @@
         const now = new Date();
 
         if (now < targetDate) {
-            console.log('now')
-            page0.classList.add('hidden');
-            page1.classList.add('hidden');
-            page2.classList.add('hidden');
+            hideall()
             countdownCard.classList.remove('hidden');
             updateCountdown();
-            setInterval(updateCountdown, 1000);
+            setTimeout(updateCountdown, 1000);
         }
     }
 
     function updateCountdown() {
+        // console.log('update countdown');
         const now = new Date();
         const diff = targetDate - now;
 
@@ -286,6 +284,8 @@
             countdownCard.classList.add('hidden');
             page0.classList.remove('hidden');
             return;
+        } else {
+            setTimeout(updateCountdown, 1000)
         }
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -298,9 +298,9 @@
 
     function start() {
         music.currentTime = 0;
-            music.play().catch((e) => {
-                console.log(e)
-            })
+        music.play().catch((e) => {
+            console.log(e)
+        })
         startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'
         setTimeout(beginSlide, 6000)
     }
@@ -329,6 +329,7 @@
     }
 
     function toggleSlide(page) {
+        // console.log('Toggling page: ' + page.id);
         hideall()
         page?.classList.remove('hidden')
     }
@@ -340,10 +341,10 @@
     }
 
     function showHearts() {
-        // const audio = new Audio("/fy-geburtstag/assets/audio/bell.mp3");
-        //
-        // audio.play()
-        //     .catch(err => console.log("Autoplay blocked"));
+        const audio = new Audio("https://raph35.github.io/fy-geburtstag/assets/audio/bell.mp3");
+
+        audio.play()
+            .catch(err => console.log("Autoplay blocked"));
         for (let i = 0; i < 20; i++) {
             const heart = document.createElement('div');
             heart.className = 'heart';

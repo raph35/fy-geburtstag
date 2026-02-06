@@ -233,14 +233,14 @@
 
 <audio id="music" loop>
     <!-- Replace with your own romantic song -->
-    <source src="assets/audio/fond.mp3" type="audio/mpeg">
+    <source src="https://raph35.github.io/fy-geburtstag/assets/audio/fond.mp3" type="audio/mpeg">
 </audio>
 
 <div id="screen-fade"></div>
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
-    console.log('test')
+    // console.log('test')
     const targetDate = new Date('2026-02-07T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -276,7 +276,7 @@
     }
 
     function updateCountdown() {
-        console.log('update countdown');
+        // console.log('update countdown');
         const now = new Date();
         const diff = targetDate - now;
 
@@ -299,7 +299,7 @@
     function start() {
         music.currentTime = 0;
         music.play().catch((e) => {
-            console.log(e)
+            // console.log(e)
         })
         startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'
         setTimeout(beginSlide, 6000)
@@ -314,7 +314,6 @@
     }
 
     function beginSlide() {
-        hideall()
         toggleSlide(page1)
     }
 
@@ -342,7 +341,7 @@
     }
 
     function showHearts() {
-        const audio = new Audio("assets/audio/bell.mp3");
+        const audio = new Audio("https://raph35.github.io/fy-geburtstag/assets/audio/bell.mp3");
 
         audio.play()
             .catch(err => console.log("Autoplay blocked"));
