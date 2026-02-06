@@ -222,7 +222,7 @@
 
 <audio id="music" loop>
     <!-- Replace with your own romantic song -->
-    <source src="/assets/audio/tompo_o.mp3" type="audio/mpeg">
+    <source src="/fy-geburtstag/assets/audio/tompo_o.mp3" type="audio/mpeg">
 </audio>
 
 <div id="screen-fade"></div>
@@ -290,7 +290,7 @@
     }
 
     function start() {
-        const audio = new Audio("/assets/audio/intro.mp3");
+        const audio = new Audio("/fy-geburtstag/assets/audio/intro.mp3");
 
         audio.play()
             .catch(err => console.log("Autoplay blocked"));
@@ -339,7 +339,7 @@
     }
 
     function showHearts() {
-        const audio = new Audio("/assets/audio/bell.mp3");
+        const audio = new Audio("/fy-geburtstag/assets/audio/bell.mp3");
 
         audio.play()
             .catch(err => console.log("Autoplay blocked"));
