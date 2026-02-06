@@ -222,14 +222,14 @@
 
 <audio id="music" loop>
     <!-- Replace with your own romantic song -->
-    <source src="assets/audio/tompo_o.mp3" type="audio/mpeg">
+    <source src="/assets/audio/tompo_o.mp3" type="audio/mpeg">
 </audio>
 
 <div id="screen-fade"></div>
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
-    const targetDate = new Date('2026-02-07T00:00:00');
+    const targetDate = new Date('2026-02-06T00:00:00');
 
     const page0 = document.getElementById('page0');
     const page1 = document.getElementById('page1');
@@ -290,13 +290,15 @@
     }
 
     function start() {
-        const audio = new Audio("assets/audio/intro.mp3");
+        const audio = new Audio("/assets/audio/intro.mp3");
 
         audio.play()
             .catch(err => console.log("Autoplay blocked"));
         setTimeout(() => {
             console.log('playing music')
-            music?.play().catch(() => {})
+            music.play().catch((e) => {
+                console.log(e)
+            })
         }, 1500)
         startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'
         setTimeout(beginSlide, 5000)
@@ -337,7 +339,7 @@
     }
 
     function showHearts() {
-        const audio = new Audio("assets/audio/bell.mp3");
+        const audio = new Audio("/assets/audio/bell.mp3");
 
         audio.play()
             .catch(err => console.log("Autoplay blocked"));
