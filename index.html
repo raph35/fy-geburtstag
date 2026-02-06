@@ -241,7 +241,7 @@
 <div class="card hidden" id="countdownCard">
     <h1>Mahandrasa kely tompoko 💖</h1>
     <p id="countdownText"></p>
-    <button onclick="showHearts()">I love you ❤️<br>(kitiho aho)</button>
+    <button id="btn-fade" onclick="showHearts()">I love you ❤️<br>(kitiho aho)</button>
 </div>
 
 <audio id="music" loop>
@@ -253,6 +253,7 @@
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
+    let buttonCount = 0;
     const targetDate = new Date('2026-02-07T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -365,6 +366,10 @@
     }
 
     function showHearts() {
+        buttonCount++;
+        if (buttonCount === 10) {
+            document.querySelector('#btn-fade').classList.add('hidden');
+        }
         const audio = new Audio("https://raph35.github.io/fy-geburtstag/assets/audio/bell.mp3");
 
         audio.play()
