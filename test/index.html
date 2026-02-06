@@ -149,6 +149,42 @@
             opacity: 1;
             pointer-events: all;
         }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            height: 100%;
+            width: 100%;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -241,7 +277,7 @@
 <div class="card hidden" id="countdownCard">
     <h1>Mahandrasa kely tompoko 💖</h1>
     <p id="countdownText"></p>
-    <button onclick="showHearts()">I love you ❤️<br>(kitiho aho)</button>
+    <button id="btn-fade" onclick="showHearts()">I love you ❤️<br>(kitiho aho)</button>
 </div>
 
 <audio id="music" loop>
@@ -249,10 +285,12 @@
     <source src="https://raph35.github.io/fy-geburtstag/assets/audio/fond.mp3" type="audio/mpeg">
 </audio>
 
+
 <div id="screen-fade"></div>
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
+    let buttonCount = 0;
     const targetDate = new Date('2026-02-06T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -263,6 +301,18 @@
     const music = document.getElementById('music');
     const startBtn = document.getElementById('startBtn');
 
+
+    const modal = document.getElementById("fullscreenModal");
+
+    function openModal() {
+        modal.classList.add("show");
+        document.body.style.overflow = "hidden"; // prevent scroll
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+        document.body.style.overflow = "";
+    }
 
     function begin() {
         typeText(document.getElementById('textType1'), 150, 1000)
