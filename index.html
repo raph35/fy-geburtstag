@@ -50,6 +50,17 @@
             margin: 0 4px;
         }
 
+        .fadeBtn {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .fadeBtn.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
@@ -147,7 +158,7 @@
     <p>
         Mampidira ecouteur azafady🤗
     </p>
-    <button id="startBtn" class="hidden" onclick="start()">Kitiho aho 🙈</button>
+    <button id="startBtn" class="fadeBtn" onclick="start()">Kitiho aho 🙈</button>
 </div>
 
 <div class="card hidden" id="page1">
@@ -222,13 +233,14 @@
 
 <audio id="music" loop>
     <!-- Replace with your own romantic song -->
-    <source src="assets/audio/tompo_o.mp3" type="audio/mpeg">
+    <source src="assets/audio/fond.mp3" type="audio/mpeg">
 </audio>
 
 <div id="screen-fade"></div>
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
+    console.log('test')
     const targetDate = new Date('2026-02-07T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -239,20 +251,15 @@
     const music = document.getElementById('music');
     const startBtn = document.getElementById('startBtn');
 
-    setTimeout(() => {
-        startBtn.classList.remove('hidden');
-    }, 5000)
-
-    // Create AudioContext and GainNode
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const track = audioCtx.createMediaElementSource(music);
-    const gainNode = audioCtx.createGain();
-
-    // Connect nodes: audio → gain → speakers
-    track.connect(gainNode).connect(audioCtx.destination);
 
     // Function to fade out
     function fadeOutAudio(duration = 5) { // duration in seconds
+        // Create AudioContext and GainNode
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const track = audioCtx.createMediaElementSource(music);
+        const gainNode = audioCtx.createGain();
+        // Connect nodes: audio → gain → speakers
+        track.connect(gainNode).connect(audioCtx.destination);
         const currentTime = audioCtx.currentTime;
         gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime); // start at current volume
         gainNode.gain.linearRampToValueAtTime(0, currentTime + duration); // fade to 0
@@ -290,16 +297,12 @@
     }
 
     function start() {
-        const audio = new Audio("assets/audio/intro.mp3");
-
-        audio.play()
-            .catch(err => console.log("Autoplay blocked"));
-        setTimeout(() => {
-            console.log('playing music')
-            music?.play().catch(() => {})
-        }, 1500)
+        music.currentTime = 0;
+        music.play().catch((e) => {
+            console.log(e)
+        })
         startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'
-        setTimeout(beginSlide, 5000)
+        setTimeout(beginSlide, 6000)
     }
 
     function end(id) {
@@ -368,9 +371,12 @@
     function endAll() {
         fadeIn(15000)
     }
+
+    setTimeout(() => {
+        startBtn.classList.add('show');
+    }, 5000)
     fadeOut()
     checkDate();
-
 </script>
 
 </body>
