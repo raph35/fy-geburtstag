@@ -154,8 +154,8 @@
 <body>
 
 <div class="card" id="page0">
-    <h1>Vonona ve ...?</h1>
-    <p>
+    <h1 id="textType1">Vonona ve ...?</h1>
+    <p id="textType2">
         Mampidira ecouteur azafady🤗
     </p>
     <button id="startBtn" class="fadeBtn" onclick="start()">Kitiho aho 🙈</button>
@@ -176,18 +176,31 @@
         Joyeux anniversaire mon cœur 💕<br>
         Mirary soa ho anao aho amin’izao andro manokana izao.<br><br>
 
+        <button onclick="nextSlide('page7')">Manaraka <i class="fa-solid fa-arrow-right"></i></button>
+    </p>
+</div>
+
+<div class="card hidden" id="page7">
+    <h1>Tsy manana atolotra 💕</h1>
+    <p>
+        Tsy mahay manao tonokalo aho, hivetsoventsoiko ny fitiavako anao<br>
+        Tsy manga feo aho, hihirahira hirary soa ho anao<br><br>
+
+        Fa ity no vitako sy mba haiko, ka ataoko ampitiavana be miaraka amin'ny fo be ❤️<br>
+
         <button onclick="nextSlide('page3')">Manaraka <i class="fa-solid fa-arrow-right"></i></button>
     </p>
 </div>
 
+
 <div class="card hidden" id="page3">
     <h1>Tahin'i Jesoa 💕</h1>
     <p>
-        Enga anie Jesoa hitahy anao hatrany, hitarika ny dianao amin’izay rehetra ataonao,
+        I Jesoa hitahy anao hatrany, hitarika ny dianao amin’izay rehetra ataonao,
         ary hanome anao fahendrena sy hery amin’ny zavatra rehetra kasainao <br>
         Ny fitahiany hameno ny fiainanao,
         Izy no ho mpitari-dalana sy ho fiadanana ao am-ponao mandrakariva.
-        TiaNy ianao 🤍✨<br><br>
+        <strong>TiaNy ianao 🤍✨</strong><br><br>
 
         <button onclick="nextSlide('page4')">Manaraka <i class="fa-solid fa-arrow-right"></i></button>
     </p>
@@ -240,7 +253,6 @@
 
 <script>
     // 👉 Set the birthday date here (YYYY-MM-DD)
-    // console.log('test')
     const targetDate = new Date('2026-02-06T00:00:00');
 
     const page0 = document.getElementById('page0');
@@ -252,8 +264,16 @@
     const startBtn = document.getElementById('startBtn');
 
 
+    function begin() {
+        typeText(document.getElementById('textType1'), 150, 1000)
+        typeText(document.getElementById('textType2'), 150, 3500)
+        setTimeout(() => {
+            startBtn.classList.add('show');
+        }, 10000)
+    }
     // Function to fade out
-    function fadeOutAudio(duration = 5) { // duration in seconds
+    function fadeOutAudio(duration = 5) {
+        // duration in seconds
         // Create AudioContext and GainNode
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const track = audioCtx.createMediaElementSource(music);
@@ -272,6 +292,9 @@
             countdownCard.classList.remove('hidden');
             updateCountdown();
             setTimeout(updateCountdown, 1000);
+        } else {
+            console.log("begin")
+            begin()
         }
     }
 
@@ -283,6 +306,7 @@
         if (diff <= 0) {
             countdownCard.classList.add('hidden');
             page0.classList.remove('hidden');
+            begin();
             return;
         } else {
             setTimeout(updateCountdown, 1000)
@@ -299,7 +323,7 @@
     function start() {
         music.currentTime = 0;
         music.play().catch((e) => {
-            console.log(e)
+            // console.log(e)
         })
         startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'
         setTimeout(beginSlide, 6000)
@@ -329,7 +353,7 @@
     }
 
     function toggleSlide(page) {
-        // console.log('Toggling page: ' + page.id);
+        console.log('Toggling page: ' + page.id);
         hideall()
         page?.classList.remove('hidden')
     }
@@ -357,7 +381,6 @@
         }
     }
 
-
     const fade = document.getElementById("screen-fade");
 
     function fadeIn(duration = 1000) {
@@ -374,12 +397,26 @@
         fadeIn(15000)
     }
 
-    setTimeout(() => {
-        startBtn.classList.add('show');
-    }, 5000)
+    function typeText(element, speed, delay = 0) {
+        let i = 0;
+        const text = element.textContent;
+        element.textContent = '';
+        function type() {
+            if (i < text.length) {
+                element.textContent += text[i++];
+                setTimeout(type, speed);
+            }
+        }
+
+        setTimeout(() => {
+            type();
+        }, delay)
+    }
+
     fadeOut()
     checkDate();
 </script>
 
 </body>
 </html>
+
