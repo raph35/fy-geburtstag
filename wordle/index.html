@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORD DUEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --border: #2a2a3a;
+            --accent: #e8ff00;
+            --accent2: #ff4444;
+            --text: #f0f0f0;
+            --muted: #555570;
+            --hit: #e8ff00;
+            --miss: #2a2a3a;
+            --p1: #e8ff00;
+            --p2: #ff6b35;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                    radial-gradient(ellipse at 20% 20%, rgba(232,255,0,0.04) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(255,107,53,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-top: 12px;
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(52px, 12vw, 88px);
+            letter-spacing: 8px;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent) 0%, #fff 50%, var(--p2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* SCREENS */
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+
+        /* LOBBY */
+        .lobby-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .big-btn {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            padding: 28px 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .big-btn .icon { font-size: 36px; }
+        .big-btn .sub { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--muted); }
+
+        .big-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(232,255,0,0.15);
+        }
+
+        .room-join {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 28px;
+        }
+
+        .field-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .text-input {
+            width: 100%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            padding: 14px 16px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            outline: none;
+            transition: border-color 0.15s;
+            margin-bottom: 16px;
+        }
+
+        .text-input:focus { border-color: var(--accent); }
+        .text-input::placeholder { color: var(--muted); letter-spacing: 2px; font-size: 13px; }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+            padding: 14px 32px;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+        }
+
+        .btn:hover { background: #fff; transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        .btn.secondary {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--muted);
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn.secondary:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+
+        /* WAITING */
+        .room-code-display {
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .room-code-label {
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .room-code {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 64px;
+            letter-spacing: 12px;
+            color: var(--accent);
+        }
+
+        .room-code-hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .waiting-anim {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 24px;
+        }
+
+        .dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* SECRET WORD */
+        .setup-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 32px;
+            margin-bottom: 16px;
+        }
+
+        .setup-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+
+        .setup-subtitle {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        /* GAME */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .player-panel {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            padding: 16px;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .player-panel.p1 { border-top: 3px solid var(--p1); }
+        .player-panel.p2 { border-top: 3px solid var(--p2); }
+        .player-panel.active-turn { box-shadow: 0 0 20px rgba(232,255,0,0.1); }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 3px;
+        }
+
+        .panel-name.p1 { color: var(--p1); }
+        .panel-name.p2 { color: var(--p2); }
+
+        .panel-badge {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            background: var(--bg);
+            padding: 3px 8px;
+            border: 1px solid var(--border);
+        }
+
+        .panel-badge.you { border-color: var(--accent); color: var(--accent); }
+
+        /* WORD DISPLAY - letter boxes */
+        .word-reveal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+            min-height: 40px;
+        }
+
+        .letter-box {
+            width: 28px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .letter-box.revealed {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            animation: pop 0.3s ease;
+        }
+
+        .letter-box.hidden {
+            background: var(--miss);
+            color: transparent;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* GUESSES LIST */
+        .guesses-list {
+            max-height: 180px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .guess-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            animation: slideIn 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .guess-word {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            min-width: 80px;
+        }
+
+        .guess-letters {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+        }
+
+        .guess-letter {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            background: var(--accent);
+            color: #000;
+        }
+
+        .guess-letter.no-match {
+            background: var(--miss);
+            color: var(--muted);
+        }
+
+        /* INPUT AREA */
+        .guess-area {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .guess-area-title {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .guess-input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .guess-input {
+            flex: 1;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 16px;
+            padding: 12px 14px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .guess-input:focus { border-color: var(--accent); }
+
+        .guess-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .guess-btn:hover { background: #fff; }
+        .guess-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* STATUS BAR */
+        .status-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .status-turn {
+            color: var(--accent);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+        }
+
+        .status-count {
+            color: var(--muted);
+        }
+
+        /* WIN SCREEN */
+        .win-screen {
+            text-align: center;
+            padding: 48px 32px;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+        }
+
+        .win-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 80px;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, var(--accent), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .win-sub {
+            font-size: 12px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        .win-word {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px;
+            letter-spacing: 8px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .win-secret {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-bottom: 32px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--accent);
+            color: #000;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+            padding: 12px 28px;
+            transition: transform 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* STATUS INDICATOR */
+        .conn-status {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 50;
+        }
+
+        .conn-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        .conn-dot.connected { background: var(--accent); animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* SCORE */
+        .score-row {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 16px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+        }
+
+        /* WAITING FOR OPPONENT */
+        .waiting-msg {
+            text-align: center;
+            padding: 20px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 520px) {
+            .game-layout { grid-template-columns: 1fr; }
+            .lobby-options { grid-template-columns: 1fr; }
+            .room-code { font-size: 48px; }
+            .logo { font-size: 56px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="conn-status">
+    <div class="conn-dot" id="connDot"></div>
+    <span id="connLabel">OFFLINE</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="wrapper">
+    <div class="header">
+        <div class="logo">WORD DUEL</div>
+        <div class="tagline">Two players. One secret. No mercy.</div>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <div class="screen active" id="screenLobby">
+        <div class="lobby-options">
+            <button class="big-btn" onclick="createRoom()">
+                <span class="icon">⚔️</span>
+                CREATE
+                <span class="sub">Start a new room</span>
+            </button>
+            <button class="big-btn" onclick="showJoin()">
+                <span class="icon">🔗</span>
+                JOIN
+                <span class="sub">Enter room code</span>
+            </button>
+        </div>
+
+        <div class="room-join" id="joinPanel" style="display:none">
+            <label class="field-label">Room Code</label>
+            <input class="text-input" id="joinCode" placeholder="XXXX" maxlength="4" />
+            <button class="btn" onclick="joinRoom()">JOIN ROOM</button>
+            <button class="btn secondary" onclick="hideJoin()">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- WAITING SCREEN -->
+    <div class="screen" id="screenWaiting">
+        <div class="room-code-display">
+            <div class="room-code-label">Your Room Code</div>
+            <div class="room-code" id="displayRoomCode">----</div>
+            <div class="room-code-hint">Share this code with your opponent</div>
+        </div>
+        <div class="waiting-anim">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="waiting-msg">Waiting for opponent to join...</div>
+        <button class="btn secondary" onclick="leaveRoom()" style="margin-top:16px">LEAVE</button>
+    </div>
+
+    <!-- SECRET WORD SCREEN -->
+    <div class="screen" id="screenSecret">
+        <div class="setup-card">
+            <div class="setup-title">YOUR SECRET WORD</div>
+            <div class="setup-subtitle">Your opponent must guess this word • Letters only • No spaces</div>
+            <label class="field-label">Enter Secret Word</label>
+            <input class="text-input" id="secretInput" placeholder="TYPE A WORD..." maxlength="16" style="letter-spacing:6px" />
+            <button class="btn" onclick="submitSecret()">LOCK IT IN 🔒</button>
+        </div>
+        <div class="waiting-msg" id="secretWaitMsg" style="display:none">
+            ✓ Your word is set. Waiting for opponent...
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="screen" id="screenGame">
+        <div class="status-bar">
+            <span class="status-turn" id="turnIndicator">YOUR TURN</span>
+            <span class="status-count" id="roundCount">ROUND 1</span>
+        </div>
+
+        <div class="game-layout">
+            <!-- MY PANEL: opponent guesses MY secret -->
+            <div class="player-panel p1" id="myPanel">
+                <div class="panel-header">
+                    <span class="panel-name p1" id="myPanelName">YOU</span>
+                    <span class="panel-badge you">YOUR SECRET</span>
+                </div>
+                <div class="word-reveal" id="myWordReveal"></div>
+                <div class="guesses-list" id="myGuessList"></div>
+            </div>
+
+            <!-- OPPONENT PANEL: I guess their secret -->
+            <div class="player-panel p2" id="opponentPanel">
+                <div class="panel-header">
+                    <span class="panel-name p2" id="opponentPanelName">OPPONENT</span>
+                    <span class="panel-badge">THEIR SECRET</span>
+                </div>
+                <div class="word-reveal" id="opponentWordReveal"></div>
+                <div class="guesses-list" id="opponentGuessList"></div>
+            </div>
+        </div>
+
+        <div class="guess-area" id="guessArea">
+            <div class="guess-area-title" id="guessAreaTitle">Enter a word to guess your opponent's secret</div>
+            <div class="guess-input-row">
+                <input class="guess-input" id="guessInput" placeholder="GUESS..." maxlength="20"
+                       onkeydown="if(event.key==='Enter') submitGuess()" />
+                <button class="guess-btn" id="guessBtn" onclick="submitGuess()">GO</button>
+            </div>
+        </div>
+
+        <div class="waiting-msg" id="waitingForOpponent" style="display:none">
+            ⏳ Waiting for opponent's guess...
+        </div>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div class="screen" id="screenWin">
+        <div class="win-screen">
+            <div class="win-title" id="winTitle">YOU WIN!</div>
+            <div class="win-sub" id="winSub">You cracked the word!</div>
+            <div class="win-word" id="winWord"></div>
+            <div class="win-secret" id="winSecret"></div>
+            <button class="btn" onclick="playAgain()">PLAY AGAIN</button>
+            <button class="btn secondary" onclick="leaveRoom()">LEAVE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue, update, remove, onDisconnect, push, serverTimestamp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ─── Firebase Config ───────────────────────────────────────────────────────
+    // Using a public demo Firebase project for this game
+    // Replace with your own Firebase config for production use
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkpBzK_NrL-sa0Bi3M3qy4ikzY1v4wgDo",
+        authName: "worlde-d3b4a.firebaseapp.com",
+        authDomain: "worlde-d3b4a.firebaseapp.com",
+        databaseURL: "https://worlde-d3b4a-default-rtdb.firebaseio.com",
+        projectId: "worlde-d3b4a",
+        storageBucket: "worlde-d3b4a.firebasestorage.app",
+        messagingSenderId: "722895318879",
+        appId: "1:722895318879:web:b6a827a19776a65efc50ea",
+        measurementId: "G-04X8WK748P"
+    };
+
+    // ─── State ──────────────────────────────────────────────────────────────────
+    let db, app;
+    let roomId = null;
+    let myRole = null; // 'p1' or 'p2'
+    let mySecret = null;
+    let opponentSecret = null;
+    let gameState = null;
+    let myRevealedLetters = new Set();
+    let opponentRevealedLetters = new Set();
+    let guessCount = 0;
+
+    // ─── Init ───────────────────────────────────────────────────────────────────
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        setConnStatus(true);
+    } catch(e) {
+        // Use localStorage fallback for demo / offline
+        setConnStatus(false);
+        useFallbackMode();
+    }
+
+    function setConnStatus(on) {
+        document.getElementById('connDot').className = 'conn-dot' + (on ? ' connected' : '');
+        document.getElementById('connLabel').textContent = on ? 'LIVE' : 'DEMO MODE';
+    }
+
+    // ─── Room Code Generation ────────────────────────────────────────────────────
+    function genCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let c = '';
+        for(let i=0; i<4; i++) c += chars[Math.floor(Math.random()*chars.length)];
+        return c;
+    }
+
+    // ─── LOBBY ───────────────────────────────────────────────────────────────────
+    window.showJoin = () => {
+        document.getElementById('joinPanel').style.display = 'block';
+        document.getElementById('joinCode').focus();
+    };
+
+    window.hideJoin = () => {
+        document.getElementById('joinPanel').style.display = 'none';
+    };
+
+    window.createRoom = async () => {
+        const code = genCode();
+        roomId = code;
+        myRole = 'p1';
+
+        if(db) {
+            const roomRef = ref(db, `rooms/${code}`);
+            await set(roomRef, {
+                created: serverTimestamp(),
+                p1: { joined: true, ready: false },
+                phase: 'waiting'
+            });
+
+            // Clean up on disconnect
+            onDisconnect(roomRef).remove();
+
+            showScreen('screenWaiting');
+            document.getElementById('displayRoomCode').textContent = code;
+            listenRoom();
+        } else {
+            // Fallback mode
+            fallbackCreate(code);
+        }
+    };
+
+    window.joinRoom = async () => {
+        const code = document.getElementById('joinCode').value.trim().toUpperCase();
+        if(code.length !== 4) { showToast('Enter a 4-character code'); return; }
+
+        roomId = code;
+        myRole = 'p2';
+
+        if(db) {
+            const roomRef = ref(db, `rooms/${code}`);
+            const snap = await get(roomRef);
+            if(!snap.exists()) { showToast('Room not found!'); return; }
+            const data = snap.val();
+            if(data.phase !== 'waiting') { showToast('Game already started!'); return; }
+
+            await update(roomRef, { 'p2/joined': true, phase: 'setup' });
+            showScreen('screenSecret');
+            listenRoom();
+        } else {
+            fallbackJoin(code);
+        }
+    };
+
+    window.leaveRoom = () => {
+        if(db && roomId) {
+            remove(ref(db, `rooms/${roomId}`));
+        }
+        roomId = null; myRole = null; mySecret = null; opponentSecret = null;
+        myRevealedLetters = new Set(); opponentRevealedLetters = new Set(); guessCount = 0;
+        showScreen('screenLobby');
+        document.getElementById('joinPanel').style.display = 'none';
+    };
+
+    // ─── LISTEN ROOM ─────────────────────────────────────────────────────────────
+    function listenRoom() {
+        if(!db) return;
+        const roomRef = ref(db, `rooms/${roomId}`);
+        onValue(roomRef, snap => {
+            if(!snap.exists()) {
+                showToast('Room closed');
+                leaveRoom(); return;
+            }
+            const data = snap.val();
+            handleRoomUpdate(data);
+        });
+    }
+
+    function handleRoomUpdate(data) {
+        const phase = data.phase;
+
+        if(phase === 'setup' && myRole === 'p1' && document.getElementById('screenWaiting').classList.contains('active')) {
+            showScreen('screenSecret');
+        }
+
+        if(phase === 'setup') {
+            // Check if both ready
+            const p1ready = data.p1?.ready;
+            const p2ready = data.p2?.ready;
+            if(myRole === 'p1') mySecret = data.p1?.secret || mySecret;
+            if(myRole === 'p2') mySecret = data.p2?.secret || mySecret;
+
+            const oppData = myRole === 'p1' ? data.p2 : data.p1;
+            if(oppData?.ready) opponentSecret = oppData.secret;
+
+            const myData = myRole === 'p1' ? data.p1 : data.p2;
+            if(myData?.ready) {
+                document.getElementById('secretWaitMsg').style.display = 'block';
+                document.querySelector('#screenSecret .setup-card').style.display = 'none';
+            }
+        }
+
+        if(phase === 'playing') {
+            if(!document.getElementById('screenGame').classList.contains('active')) {
+                // Load secrets
+                opponentSecret = (myRole === 'p1' ? data.p2?.secret : data.p1?.secret) || '';
+                mySecret = (myRole === 'p1' ? data.p1?.secret : data.p2?.secret) || '';
+                startGame(data);
+            } else {
+                updateGameUI(data);
+            }
+        }
+
+        if(phase === 'gameover') {
+            showWin(data);
+        }
+    }
+
+    // ─── SECRET WORD ─────────────────────────────────────────────────────────────
+    window.submitSecret = async () => {
+        const word = document.getElementById('secretInput').value.trim().toUpperCase();
+        if(word.length < 2) { showToast('Word too short!'); return; }
+        if(!/^[A-Z]+$/.test(word)) { showToast('Letters only, no spaces!'); return; }
+
+        mySecret = word;
+
+        if(db) {
+            const path = `rooms/${roomId}/${myRole}`;
+            await update(ref(db, path), { secret: word, ready: true });
+
+            // Check if both ready → start
+            const snap = await get(ref(db, `rooms/${roomId}`));
+            const data = snap.val();
+            if(data.p1?.ready && data.p2?.ready) {
+                await update(ref(db, `rooms/${roomId}`), {
+                    phase: 'playing',
+                    turn: 'p1',
+                    round: 1,
+                    guesses: null
+                });
+            }
+
+            document.getElementById('secretWaitMsg').style.display = 'block';
+            document.querySelector('#screenSecret .setup-card').style.display = 'none';
+        } else {
+            fallbackSecret(word);
+        }
+    };
+
+    // ─── GAME ─────────────────────────────────────────────────────────────────────
+    function startGame(data) {
+        showScreen('screenGame');
+        myRevealedLetters = new Set();
+        opponentRevealedLetters = new Set();
+        guessCount = 0;
+
+        // Build word reveal boxes
+        buildWordBoxes('myWordReveal', mySecret);
+        buildWordBoxes('opponentWordReveal', opponentSecret);
+        document.getElementById('myGuessList').innerHTML = '';
+        document.getElementById('opponentGuessList').innerHTML = '';
+
+        updateGameUI(data);
+    }
+
+    function buildWordBoxes(containerId, word) {
+        const c = document.getElementById(containerId);
+        c.innerHTML = '';
+        for(let ch of word) {
+            const box = document.createElement('div');
+            box.className = 'letter-box hidden';
+            box.dataset.letter = ch;
+            box.textContent = ch;
+            c.appendChild(box);
+        }
+    }
+
+    function updateGameUI(data) {
+        const isMyTurn = data.turn === myRole;
+        const round = data.round || 1;
+
+        document.getElementById('roundCount').textContent = `ROUND ${round}`;
+        document.getElementById('turnIndicator').textContent = isMyTurn ? 'YOUR TURN' : "OPPONENT'S TURN";
+
+        document.getElementById('guessArea').style.display = isMyTurn ? 'block' : 'none';
+        document.getElementById('waitingForOpponent').style.display = isMyTurn ? 'none' : 'block';
+
+        // Replay guesses
+        if(data.guesses) {
+            myRevealedLetters = new Set();
+            opponentRevealedLetters = new Set();
+            document.getElementById('myGuessList').innerHTML = '';
+            document.getElementById('opponentGuessList').innerHTML = '';
+            buildWordBoxes('myWordReveal', mySecret);
+            buildWordBoxes('opponentWordReveal', opponentSecret);
+
+            const gs = Object.values(data.guesses).sort((a,b) => (a.ts||0)-(b.ts||0));
+            for(const g of gs) {
+                applyGuess(g.by, g.word);
+            }
+        }
+
+        if(isMyTurn) document.getElementById('guessInput').focus();
+    }
+
+    function applyGuess(byRole, guessWord) {
+        const isMe = byRole === myRole;
+        // If I'm guessing → target is opponent's secret
+        // If opponent guesses → target is my secret
+        const targetSecret = isMe ? opponentSecret : mySecret;
+        const revealedSet = isMe ? opponentRevealedLetters : myRevealedLetters;
+        const revealContainerId = isMe ? 'opponentWordReveal' : 'myWordReveal';
+        const guessListId = isMe ? 'opponentGuessList' : 'myGuessList';
+
+        const secretLetters = new Set(targetSecret.split(''));
+        const guessLetters = guessWord.toUpperCase().split('');
+
+        // Find matching letters
+        const matches = guessLetters.filter(l => secretLetters.has(l));
+        const newlyRevealed = [];
+
+        for(const l of guessLetters) {
+            if(secretLetters.has(l) && !revealedSet.has(l)) {
+                revealedSet.add(l);
+                newlyRevealed.push(l);
+            }
+        }
+
+        // Reveal boxes
+        const boxes = document.getElementById(revealContainerId).querySelectorAll('.letter-box');
+        for(const box of boxes) {
+            if(revealedSet.has(box.dataset.letter)) {
+                box.classList.remove('hidden');
+                box.classList.add('revealed');
+            }
+        }
+
+        // Add guess row
+        const row = document.createElement('div');
+        row.className = 'guess-row';
+        const wordEl = document.createElement('div');
+        wordEl.className = 'guess-word';
+        wordEl.textContent = guessWord.toUpperCase();
+        row.appendChild(wordEl);
+
+        const lettersEl = document.createElement('div');
+        lettersEl.className = 'guess-letters';
+        for(const l of guessLetters) {
+            const el = document.createElement('div');
+            el.textContent = l;
+            el.className = 'guess-letter' + (secretLetters.has(l) ? '' : ' no-match');
+            lettersEl.appendChild(el);
+        }
+        row.appendChild(lettersEl);
+        document.getElementById(guessListId).prepend(row);
+
+        guessCount++;
+    }
+
+    window.submitGuess = async () => {
+        const word = document.getElementById('guessInput').value.trim().toUpperCase();
+        if(word.length < 1) return;
+        if(!/^[A-Z]+$/.test(word)) { showToast('Letters only!'); return; }
+
+        document.getElementById('guessInput').value = '';
+
+        if(db) {
+            const snap = await get(ref(db, `rooms/${roomId}`));
+            const data = snap.val();
+            if(data.turn !== myRole) { showToast('Not your turn!'); return; }
+
+            // Check for win
+            const targetSecret = myRole === 'p1' ? data.p2.secret : data.p1.secret;
+            const secretLetterSet = new Set(targetSecret.split(''));
+            const guessLetterSet = new Set(word.split(''));
+
+            // Compute all revealed letters after this guess
+            const existingGuesses = data.guesses ? Object.values(data.guesses) : [];
+            const myGuesses = existingGuesses.filter(g => g.by === myRole);
+            const allMyLetters = new Set();
+            for(const g of myGuesses) for(const l of g.word.split('')) allMyLetters.add(l);
+            for(const l of word.split('')) allMyLetters.add(l);
+
+            const won = [...secretLetterSet].every(l => allMyLetters.has(l));
+            const round = data.round || 1;
+            const nextTurn = myRole === 'p1' ? 'p2' : 'p1';
+
+            const guessRef = push(ref(db, `rooms/${roomId}/guesses`));
+            await set(guessRef, { by: myRole, word, ts: Date.now() });
+
+            if(won) {
+                await update(ref(db, `rooms/${roomId}`), {
+                    phase: 'gameover',
+                    winner: myRole,
+                    turn: nextTurn,
+                    round: round + 1
+                });
+            } else {
+                await update(ref(db, `rooms/${roomId}`), {
+                    turn: nextTurn,
+                    round: round + 1
+                });
+            }
+        } else {
+            fallbackGuess(word);
+        }
+    };
+
+    // ─── WIN SCREEN ───────────────────────────────────────────────────────────────
+    function showWin(data) {
+        if(document.getElementById('screenWin').classList.contains('active')) return;
+        showScreen('screenWin');
+        const iWon = data.winner === myRole;
+        const oppSecret = myRole === 'p1' ? data.p2?.secret : data.p1?.secret;
+        document.getElementById('winTitle').textContent = iWon ? 'YOU WIN!' : 'YOU LOSE';
+        document.getElementById('winSub').textContent = iWon ? 'You cracked their word!' : 'They cracked your word!';
+        document.getElementById('winWord').textContent = oppSecret || '';
+        document.getElementById('winSecret').textContent = `The secret was: ${oppSecret}`;
+    }
+
+    window.playAgain = async () => {
+        if(db && roomId) {
+            await update(ref(db, `rooms/${roomId}`), {
+                phase: 'setup',
+                'p1/ready': false,
+                'p1/secret': null,
+                'p2/ready': false,
+                'p2/secret': null,
+                guesses: null,
+                winner: null,
+                round: 0
+            });
+            mySecret = null; opponentSecret = null;
+            myRevealedLetters = new Set(); opponentRevealedLetters = new Set();
+            document.getElementById('secretInput').value = '';
+            document.querySelector('#screenSecret .setup-card').style.display = 'block';
+            document.getElementById('secretWaitMsg').style.display = 'none';
+            showScreen('screenSecret');
+        } else {
+            fallbackReset();
+        }
+    };
+
+    // ─── FALLBACK MODE (same device / demo) ──────────────────────────────────────
+    // When Firebase is unavailable, use BroadcastChannel for same-browser tabs
+    let bc;
+
+    function useFallbackMode() {
+        try {
+            bc = new BroadcastChannel('word-duel');
+            bc.onmessage = e => handleBCMessage(e.data);
+        } catch(e) {}
+    }
+
+    let fallbackRoom = null;
+
+    function fallbackCreate(code) {
+        fallbackRoom = { code, phase:'waiting', p1:{ready:false}, p2:{ready:false}, guesses:[], turn:'p1', round:1 };
+        if(bc) bc.postMessage({type:'created', code});
+        showScreen('screenWaiting');
+        document.getElementById('displayRoomCode').textContent = code;
+    }
+
+    function fallbackJoin(code) {
+        fallbackRoom = { code, phase:'setup', p1:{ready:false}, p2:{ready:false}, guesses:[], turn:'p1', round:1 };
+        if(bc) bc.postMessage({type:'joined', code});
+        showScreen('screenSecret');
+    }
+
+    function fallbackSecret(word) {
+        if(myRole === 'p1') fallbackRoom.p1 = {ready:true, secret:word};
+        else fallbackRoom.p2 = {ready:true, secret:word};
+        if(bc) bc.postMessage({type:'secret', role:myRole, word});
+        checkFallbackBothReady();
+    }
+
+    function checkFallbackBothReady() {
+        if(fallbackRoom?.p1?.ready && fallbackRoom?.p2?.ready) {
+            fallbackRoom.phase = 'playing';
+            opponentSecret = (myRole==='p1' ? fallbackRoom.p2?.secret : fallbackRoom.p1?.secret) || '';
+            startGame(fallbackRoom);
+            if(bc) bc.postMessage({type:'start', room: fallbackRoom});
+        }
+    }
+
+    function fallbackGuess(word) {
+        fallbackRoom.guesses.push({by:myRole, word, ts:Date.now()});
+        const targetSecret = myRole==='p1' ? fallbackRoom.p2?.secret : fallbackRoom.p1?.secret;
+        const secretSet = new Set((targetSecret||'').split(''));
+        const allLetters = new Set(fallbackRoom.guesses.filter(g=>g.by===myRole).flatMap(g=>g.word.split('')));
+        const won = [...secretSet].every(l=>allLetters.has(l));
+        fallbackRoom.turn = myRole==='p1' ? 'p2' : 'p1';
+        fallbackRoom.round = (fallbackRoom.round||1) + 1;
+        if(won) { fallbackRoom.phase='gameover'; fallbackRoom.winner=myRole; }
+        if(bc) bc.postMessage({type:'guess', room: fallbackRoom});
+        updateGameUI(fallbackRoom);
+        if(won) showWin(fallbackRoom);
+    }
+
+    function fallbackReset() {
+        fallbackRoom = {...fallbackRoom, phase:'setup', guesses:[], winner:null, round:1, p1:{ready:false}, p2:{ready:false}};
+        mySecret=null; opponentSecret=null;
+        myRevealedLetters=new Set(); opponentRevealedLetters=new Set();
+        document.getElementById('secretInput').value='';
+        document.querySelector('#screenSecret .setup-card').style.display='block';
+        document.getElementById('secretWaitMsg').style.display='none';
+        showScreen('screenSecret');
+        if(bc) bc.postMessage({type:'reset', room:fallbackRoom});
+    }
+
+    function handleBCMessage(msg) {
+        if(!fallbackRoom && msg.code) fallbackRoom = {};
+        switch(msg.type) {
+            case 'joined':
+                if(myRole==='p1') showScreen('screenSecret');
+                break;
+            case 'secret':
+                if(msg.role !== myRole) {
+                    if(myRole==='p1') fallbackRoom.p2 = {ready:true, secret:msg.word};
+                    else fallbackRoom.p1 = {ready:true, secret:msg.word};
+                    checkFallbackBothReady();
+                }
+                break;
+            case 'start':
+                if(!document.getElementById('screenGame').classList.contains('active')) {
+                    fallbackRoom = msg.room;
+                    opponentSecret = (myRole==='p1' ? fallbackRoom.p2?.secret : fallbackRoom.p1?.secret) || '';
+                    mySecret = (myRole==='p1' ? fallbackRoom.p1?.secret : fallbackRoom.p2?.secret) || '';
+                    startGame(fallbackRoom);
+                }
+                break;
+            case 'guess':
+                fallbackRoom = msg.room;
+                updateGameUI(fallbackRoom);
+                if(fallbackRoom.phase==='gameover') showWin(fallbackRoom);
+                break;
+            case 'reset':
+                fallbackRoom = msg.room;
+                mySecret=null; opponentSecret=null;
+                myRevealedLetters=new Set(); opponentRevealedLetters=new Set();
+                document.getElementById('secretInput').value='';
+                document.querySelector('#screenSecret .setup-card').style.display='block';
+                document.getElementById('secretWaitMsg').style.display='none';
+                showScreen('screenSecret');
+                break;
+        }
+    }
+
+    // ─── UTILS ────────────────────────────────────────────────────────────────────
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    window.showScreen = showScreen;
+
+    let toastTimeout;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+</script>
+
+</body>
+</html>
